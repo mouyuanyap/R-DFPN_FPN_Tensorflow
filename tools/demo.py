@@ -14,6 +14,7 @@ from data.io import image_preprocess
 from libs.networks.network_factory import get_network_byname
 from libs.rpn import build_rpn
 from libs.fast_rcnn import build_fast_rcnn
+from libs.box_utils.coordinate_convert import forward_convert
 from tools import restore_model
 from libs.configs import cfgs
 from help_utils.tools import *
@@ -398,8 +399,19 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         if show_res:
                             visualize_detection(src_img, boxes, scores)
                         if len(boxes) > 0:
+                            
                             for ii in range(len(boxes)):
+                                
                                 box = boxes[ii]
+                                print('b')
+                                print(box)
+                                a = cv2.boxPoints(((box[0], box[1]), (box[2], box[3]), box[4]))
+                                print('a')
+                                print(a)
+                                print('l')
+                                print(labels[ii])
+                                print('s')
+                                print(scores[ii])
                                 box[0] = box[0] + ww
                                 box[1] = box[1] + hh
                                 box_res.append(box)

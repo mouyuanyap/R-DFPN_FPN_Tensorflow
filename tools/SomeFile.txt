@@ -1,0 +1,255 @@
+2021-03-13 03:18:25.375803: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2021-03-13 03:18:25.375955: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2021-03-13 03:18:25.375984: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2021-03-13 03:18:25.376016: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+2021-03-13 03:18:25.376042: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+2021-03-13 03:18:25.387917: E tensorflow/stream_executor/cuda/cuda_driver.cc:406] failed call to cuInit: CUDA_ERROR_NO_DEVICE
+2021-03-13 03:18:25.387987: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:145] kernel driver does not appear to be running on this host (0ee1bbd28795): /proc/driver/nvidia/version does not exist
+Called with args:
+Namespace(des_folder='/content/drive/MyDrive/RDFPN_ckpt1/result', det_th=0.7, h_len=600, image_ext='png', src_folder='/content/drive/MyDrive/HRSC2016/test_cut/images', w_len=1000)
+model restore from : /content/drive/MyDrive/RDFPN_ckpt1/voc_80004model.ckpt
+restore model
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+b
+[574.1282  474.881   158.67064 537.2192  -66.73514]
+a
+[[789.5607  653.86145]
+ [296.02353 441.6695 ]
+ [358.69562 295.90057]
+ [852.2328  508.09253]]
+l
+1
+s
+0.9399441
+b
+[571.7038   473.13715  160.64006  548.51935  -65.963615]
+a
+[[789.4659  658.2029 ]
+ [288.5103  434.78186]
+ [353.9417  288.0714 ]
+ [854.8973  511.49243]]
+l
+1
+s
+0.93795604
+b
+[576.90393 478.2951  154.16698 558.9182  -67.07431]
+a
+[[804.26196 658.14954]
+ [289.49222 440.43018]
+ [349.5459  298.44067]
+ [864.3157  516.16003]]
+l
+1
+s
+0.9378082
+b
+[572.46564 475.53143 159.05653 545.49896 -66.94374]
+a
+[[792.28204 655.5252 ]
+ [290.35715 441.88885]
+ [352.64923 295.53766]
+ [854.5741  509.174  ]]
+l
+1
+s
+0.9368484
+b
+[579.4599   481.64435  156.68323  554.8229   -67.289856]
+a
+[[805.1182  661.01215]
+ [293.31094 446.81207]
+ [353.80157 302.27655]
+ [865.6089  516.4766 ]]
+l
+1
+s
+0.9345319
+b
+[573.7166   475.3449   161.87909  537.1555   -67.665215]
+a
+[[791.38696 652.2766 ]
+ [294.5293  448.14798]
+ [356.04626 298.4132 ]
+ [852.90393 502.54184]]
+l
+1
+s
+0.93427896
+b
+[572.00415  473.5334   161.13387  547.8942   -66.553825]
+a
+[[791.27606 656.44836]
+ [288.61908 438.44815]
+ [352.73224 290.6184 ]
+ [855.3892  508.61862]]
+l
+1
+s
+0.9334335
+b
+[573.7006   470.74222  158.65471  543.72034  -66.007675]
+a
+[[789.8164  653.7579 ]
+ [293.07355 432.67346]
+ [357.58484 287.72656]
+ [854.3277  508.81097]]
+l
+1
+s
+0.9329387
+b
+[571.9351  471.94647 160.07265 550.45215 -66.12665]
+a
+[[791.22144 656.52356]
+ [287.86478 433.74658]
+ [352.6488  287.3694 ]
+ [856.0055  510.14636]]
+l
+1
+s
+0.93275005
+b
+[572.15564  478.0288   152.19646  572.9397   -63.764687]
+a
+[[795.4752  672.9244 ]
+ [281.55627 419.65137]
+ [348.83606 283.13324]
+ [862.755   536.40625]]
+l
+1
+s
+0.9327348
+b
+[571.96423 474.02573 157.71225 530.5548  -67.34774]
+a
+[[786.40753 648.96704]
+ [296.7801  444.6306 ]
+ [357.52094 299.0844 ]
+ [847.1484  503.42084]]
+l
+1
+s
+0.9322084
+b
+[571.75995  479.62845  147.42197  582.99774  -63.423645]
+a
+[[799.4812  675.9647 ]
+ [278.0836  415.13736]
+ [344.0387  283.29218]
+ [865.4363  544.1195 ]]
+l
+1
+s
+0.9321523
+b
+[571.32745 473.92017 156.69302 528.25073 -67.22432]
+a
+[[784.52844 648.4071 ]
+ [297.46677 443.90848]
+ [358.12646 299.43323]
+ [845.1881  503.93185]]
+l
+1
+s
+0.9313114
+b
+[569.721   469.4617  160.32077 553.0522  -64.80115]
+a
+[[785.8025  659.7278 ]
+ [285.3812  424.25958]
+ [353.63953 279.19562]
+ [854.0608  514.6638 ]]
+l
+1
+s
+0.93107367
+b
+[570.8791   479.1925   149.07422  579.2057   -63.551353]
+a
+[[796.97186 674.9159 ]
+ [278.38934 416.9403 ]
+ [344.78632 283.46912]
+ [863.36884 541.4447 ]]
+l
+1
+s
+0.93098867
+b
+[571.5846  477.0184  152.01477 575.6919  -63.54554]
+a
+[[795.42957 673.29846]
+ [280.0191  416.8355 ]
+ [347.73962 280.73834]
+ [863.1501  537.2013 ]]
+l
+1
+s
+0.930916
+b
+[573.4974  476.53073 158.7264  534.96936 -67.38501]
+a
+[[789.897   652.64935]
+ [296.0616  446.93393]
+ [357.09778 300.4121 ]
+ [850.9331  506.12753]]
+l
+1
+s
+0.9307709
+b
+[568.255    467.40622  160.42566  541.7141   -65.577034]
+a
+[[781.7097  652.43256]
+ [288.4692  428.45032]
+ [354.8003  282.37988]
+ [848.0408  506.36212]]
+l
+1
+s
+0.9305749
+b
+[571.54626 474.34845 155.64627 531.7198  -67.26424]
+a
+[[786.67084 648.8745 ]
+ [296.26724 443.3745 ]
+ [356.4217  299.8224 ]
+ [846.8253  505.3224 ]]
+l
+1
+s
+0.930158
+b
+[570.57294 470.79498 160.11873 543.414   -65.9675 ]
+a
+[[786.1224  654.56836]
+ [289.81442 433.26038]
+ [355.0235  287.0216 ]
+ [851.3314  508.3296 ]]
+l
+1
+s
+0.9300282
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected
+no CUDA-capable device is detected

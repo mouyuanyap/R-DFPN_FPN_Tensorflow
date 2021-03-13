@@ -23,6 +23,8 @@ def forward_convert(coordinate, with_label=False, mode=None):
             box = np.reshape(box, [-1, ])
             boxes.append([box[0], box[1], box[2], box[3], box[4], box[5], box[6], box[7], rect[5]])
     else:
+        #print('c')
+        #print(coordinate)
         for rect in coordinate:
             box = cv2.boxPoints(((rect[0], rect[1]), (rect[2], rect[3]), rect[4]))
             boxes.append(np.reshape(box, [-1, ]))
