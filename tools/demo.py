@@ -393,10 +393,12 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 kk = 0 
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
+                    print(h_size)
                     if h_size < 10:
                         break
                     for ww in range(0, imgW, w_len):
                         w_size = min(w_len, imgW - ww)
+                        print(w_size)
                         if w_size < 10:
                             break
 
@@ -407,11 +409,18 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         # else:
                         #     src_img = chw2hwc(src_img)
 
-                        boxes, labels, scores = sess.run([fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
+                        summary_str, rpn_image, boxes, labels, scores = sess.run([summary_op,rpn_proposals_objcet_boxes_in_img, fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
                                                          feed_dict={img_plac: src_img})
+
                         #print(rpn_output)
+                        #summary_writer.add_summary(summary_str, i)
+                        #summary_writer.flush()
+                        i = i + 1
+                        print('rpn')
+                        print(rpn_image[0].shape)
 
                         #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
+                        cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn.jpg'.format(i), rpn_image[0])
                         kk = kk + 1 
                         if show_res:
                             visualize_detection(src_img, boxes, scores)
@@ -427,7 +436,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 time_elapsed = timer() - start
                 print("{} detection time : {:.4f} sec".format(img_path.split('/')[-1].split('.')[0], time_elapsed))
 
-                # if target_name == 'aircraft':
+                # if target_name == 'aircraft':s
                 # img = cv2.imread(img_path)
                 # if len(img.shape) == 2:
                 #     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
@@ -438,14 +447,16 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 img_np = draw_box_cv(np.array(img, np.float32) - np.array([103.939, 116.779, 123.68]),
                                      boxes=np.array(box_res),
                                      labels=np.array(label_res),
-                                     scores=np.array(score_res))             
-                                                                      
+                                     scores=np.array(score_res))     
+                print('img')
+                print(img_np.shape)                                          
                 cv2.imwrite('/content/R-DFPN_FPN_Tensorflow/output' + '/{}_fpn.jpg'.format(img_path.split('/')[-1].split('.')[0]), img_np)
                 
-                summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
-                summary_writer.add_summary(summary_str, i)
-                summary_writer.flush()
-                i = i + 1
+                #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
+                #summary_writer.add_summary(summary_str, i)
+                #summary_writer.flush()
+                
+                #i = i + 1
                 # clip_obj_imgs(src_img, box_res, label_res, score_res, des_folder)
                 # print(img_path)
                 # det_xml_path =img_path.replace(".tif", ".det.xml")
@@ -472,10 +483,10 @@ def parse_args():
                         type=float)
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',
-                        default=600, type=int)
+                        default=900, type=int)
     parser.add_argument('--w_len', dest='w_len',
                         help='image width',
-                        default=1000, type=int)
+                        default=1400, type=int)
     parser.add_argument('--image_ext', dest='image_ext',
                         help='image format',
                         default='.tif', type=str)
