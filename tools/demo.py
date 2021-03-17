@@ -391,6 +391,9 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 imgH = img.shape[0]
                 imgW = img.shape[1]
                 kk = 0 
+
+                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result3/annotations/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
+
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
                     print(h_size)
@@ -415,12 +418,13 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         #print(rpn_output)
                         #summary_writer.add_summary(summary_str, i)
                         #summary_writer.flush()
-                        i = i + 1
+                        
                         print('rpn')
                         print(rpn_image[0].shape)
 
                         #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
-                        cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn.jpg'.format(i), rpn_image[0])
+                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/rpn' + '/ship{}_fpn.jpg'.format(i), rpn_image[0])
+                        
                         kk = kk + 1 
                         if show_res:
                             visualize_detection(src_img, boxes, scores)
@@ -429,9 +433,14 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                                 box = boxes[ii]
                                 box[0] = box[0] + ww
                                 box[1] = box[1] + hh
+
+                                a = cv2.boxPoints(((box[0], box[1]), (box[2], box[3]), box[4]))
+                                w.write("{} {} {} {} {} {} {} {} ship {}\n".format(a[0][0],a[0][1],a[1][0],a[1][1],a[2][0],a[2][1],a[3][0],a[3][1],scores[ii]))
+
                                 box_res.append(box)
                                 label_res.append(labels[ii])
                                 score_res.append(scores[ii])
+                        w.close()
                 # ds = None
                 time_elapsed = timer() - start
                 print("{} detection time : {:.4f} sec".format(img_path.split('/')[-1].split('.')[0], time_elapsed))
@@ -450,8 +459,8 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                                      scores=np.array(score_res))     
                 print('img')
                 print(img_np.shape)                                          
-                cv2.imwrite('/content/R-DFPN_FPN_Tensorflow/output' + '/{}_fpn.jpg'.format(img_path.split('/')[-1].split('.')[0]), img_np)
-                
+                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output' + '/ship{}_fpn.jpg'.format(i), img_np)
+                i = i + 1
                 #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
                 #summary_writer.add_summary(summary_str, i)
                 #summary_writer.flush()
