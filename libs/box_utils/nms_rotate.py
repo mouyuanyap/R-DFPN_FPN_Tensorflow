@@ -101,15 +101,21 @@ def nms_rotate_gpu(boxes_list, scores, iou_threshold, use_angle_condition=False,
 
 
 if __name__ == '__main__':
+    '''
     boxes = np.array([[50, 50, 100, 100, 0],
                       [60, 60, 100, 100, 0],
                       [50, 50, 100, 100, -45.],
+                      [200, 200, 100, 100, 0.]])'''
+    
+    boxes = np.array([[50, 50, 100, 100, 0],
+                      [50, 50, 100, 100, 0],
+                      [200, 200, 100, 100, 0.],
                       [200, 200, 100, 100, 0.]])
 
-    scores = np.array([0.99, 0.88, 0.66, 0.77])
+    scores = np.array([0.98, 0.98, 0.99, 0.99])
 
     keep = nms_rotate(tf.convert_to_tensor(boxes, dtype=tf.float32), tf.convert_to_tensor(scores, dtype=tf.float32),
-                      0.7, 5)
+                      0.8, 2)
 
     import os
     os.environ["CUDA_VISIBLE_DEVICES"] = '0'
