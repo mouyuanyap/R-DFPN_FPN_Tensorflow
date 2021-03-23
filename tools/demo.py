@@ -349,6 +349,10 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
         fast_rcnn_decode_boxes, fast_rcnn_score, num_of_objects, detection_category = \
             fast_rcnn.fast_rcnn_predict()
 
+        e_box = fast_rcnn.dbox
+        score1 = fast_rcnn.fast_rcnn_scores
+        score2 = fast_rcnn.scr
+
         aa = tf.summary.image('rpn/rpn_object_boxes', rpn_proposals_objcet_boxes_in_img)
         summary_op = tf.summary.merge([aa])
 
@@ -392,7 +396,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 imgW = img.shape[1]
                 kk = 0 
 
-                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result3/annotations/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
+                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result3/annotations_hard/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
 
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
@@ -412,18 +416,26 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         # else:
                         #     src_img = chw2hwc(src_img)
 
-                        summary_str, rpn_image, boxes, labels, scores = sess.run([summary_op,rpn_proposals_objcet_boxes_in_img, fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
+                        boxx,s1,s2, summary_str, rpn_image, boxes, labels, scores = sess.run([e_box,score1,score2, summary_op,rpn_proposals_objcet_boxes_in_img, fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
                                                          feed_dict={img_plac: src_img})
 
                         #print(rpn_output)
                         #summary_writer.add_summary(summary_str, i)
                         #summary_writer.flush()
-                        
+                        print('box')
+                        for i in boxx[0]:
+                          if i[0]!=0:
+                            gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+                            print(gg)
+                        print('score')
+                        print(s1)
+                        print('softmax_score')
+                        print(s2)
                         print('rpn')
                         print(rpn_image[0].shape)
 
                         #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
-                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/rpn' + '/ship{}_fpn.jpg'.format(i), rpn_image[0])
+                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/rpn_hard' + '/ship{}_fpn.jpg'.format(i), rpn_image[0])
                         
                         kk = kk + 1 
                         if show_res:
@@ -459,8 +471,9 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                                      scores=np.array(score_res))     
                 print('img')
                 print(img_np.shape)                                          
-                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output' + '/ship{}_fpn.jpg'.format(i), img_np)
+                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output_hard' + '/ship{}_fpn.jpg'.format(i), img_np)
                 i = i + 1
+                break
                 #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
                 #summary_writer.add_summary(summary_str, i)
                 #summary_writer.flush()
