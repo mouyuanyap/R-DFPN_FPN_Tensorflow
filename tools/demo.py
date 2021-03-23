@@ -17,6 +17,7 @@ from libs.fast_rcnn import build_fast_rcnn
 from tools import restore_model
 from libs.configs import cfgs
 from help_utils.tools import *
+from libs.box_utils.show_box_in_tensor import *
 from help_utils.help_utils import *
 import argparse
 
@@ -305,6 +306,14 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
 
         # rpn predict proposals
         rpn_proposals_boxes, rpn_proposals_scores = rpn.rpn_proposals()  # rpn_score shape: [300, ]
+        
+        rpn_object_boxes_indices = tf.reshape(tf.where(tf.greater(rpn_proposals_scores, 0.6)), [-1])
+        rpn_object_boxes = tf.gather(rpn_proposals_boxes, rpn_object_boxes_indices)
+        rpn_object_soxres = tf.gather(rpn_proposals_scores, rpn_object_boxes_indices)
+
+        rpn_proposals_objcet_boxes_in_img = draw_boxes_with_scores(img_batch,
+                                                                       rpn_object_boxes,
+                                                                       scores=rpn_object_soxres)
 
         # ***********************************************************************************************
         # *                                         Fast RCNN                                           *
@@ -340,6 +349,13 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
         fast_rcnn_decode_boxes, fast_rcnn_score, num_of_objects, detection_category = \
             fast_rcnn.fast_rcnn_predict()
 
+        e_box = fast_rcnn.dbox
+        score1 = fast_rcnn.fast_rcnn_scores
+        score2 = fast_rcnn.scr
+
+        aa = tf.summary.image('rpn/rpn_object_boxes', rpn_proposals_objcet_boxes_in_img)
+        summary_op = tf.summary.merge([aa])
+
         init_op = tf.group(
             tf.global_variables_initializer(),
             tf.local_variables_initializer()
@@ -360,6 +376,8 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess, coord)
 
+            summary_writer = tf.summary.FileWriter("/content/R-DFPN_FPN_Tensorflow/summary", graph=sess.graph)
+            i = 0 
             for img_path in file_paths:
                 start = timer()
                 # gdal.AllRegister()
@@ -376,12 +394,18 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 # imgW = ds.RasterXSize
                 imgH = img.shape[0]
                 imgW = img.shape[1]
+                kk = 0 
+
+                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result3/annotations_hard/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
+
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
+                    print(h_size)
                     if h_size < 10:
                         break
                     for ww in range(0, imgW, w_len):
                         w_size = min(w_len, imgW - ww)
+                        print(w_size)
                         if w_size < 10:
                             break
 
@@ -392,9 +416,28 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         # else:
                         #     src_img = chw2hwc(src_img)
 
-                        boxes, labels, scores = sess.run([fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
+                        boxx,s1,s2, summary_str, rpn_image, boxes, labels, scores = sess.run([e_box,score1,score2, summary_op,rpn_proposals_objcet_boxes_in_img, fast_rcnn_decode_boxes, detection_category, fast_rcnn_score],
                                                          feed_dict={img_plac: src_img})
 
+                        #print(rpn_output)
+                        #summary_writer.add_summary(summary_str, i)
+                        #summary_writer.flush()
+                        print('box')
+                        for i in boxx[0]:
+                          if i[0]!=0:
+                            gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+                            print(gg)
+                        print('score')
+                        print(s1)
+                        print('softmax_score')
+                        print(s2)
+                        print('rpn')
+                        print(rpn_image[0].shape)
+
+                        #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
+                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/rpn_hard' + '/ship{}_fpn.jpg'.format(i), rpn_image[0])
+                        
+                        kk = kk + 1 
                         if show_res:
                             visualize_detection(src_img, boxes, scores)
                         if len(boxes) > 0:
@@ -402,14 +445,19 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                                 box = boxes[ii]
                                 box[0] = box[0] + ww
                                 box[1] = box[1] + hh
+
+                                a = cv2.boxPoints(((box[0], box[1]), (box[2], box[3]), box[4]))
+                                w.write("{} {} {} {} {} {} {} {} ship {}\n".format(a[0][0],a[0][1],a[1][0],a[1][1],a[2][0],a[2][1],a[3][0],a[3][1],scores[ii]))
+
                                 box_res.append(box)
                                 label_res.append(labels[ii])
                                 score_res.append(scores[ii])
+                        w.close()
                 # ds = None
                 time_elapsed = timer() - start
                 print("{} detection time : {:.4f} sec".format(img_path.split('/')[-1].split('.')[0], time_elapsed))
 
-                # if target_name == 'aircraft':
+                # if target_name == 'aircraft':s
                 # img = cv2.imread(img_path)
                 # if len(img.shape) == 2:
                 #     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
@@ -420,8 +468,17 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 img_np = draw_box_cv(np.array(img, np.float32) - np.array([103.939, 116.779, 123.68]),
                                      boxes=np.array(box_res),
                                      labels=np.array(label_res),
-                                     scores=np.array(score_res))
-                cv2.imwrite(des_folder + '/{}_fpn.jpg'.format(img_path.split('/')[-1].split('.')[0]), img_np)
+                                     scores=np.array(score_res))     
+                print('img')
+                print(img_np.shape)                                          
+                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output_hard' + '/ship{}_fpn.jpg'.format(i), img_np)
+                i = i + 1
+                break
+                #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
+                #summary_writer.add_summary(summary_str, i)
+                #summary_writer.flush()
+                
+                #i = i + 1
                 # clip_obj_imgs(src_img, box_res, label_res, score_res, des_folder)
                 # print(img_path)
                 # det_xml_path =img_path.replace(".tif", ".det.xml")
@@ -448,10 +505,10 @@ def parse_args():
                         type=float)
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',
-                        default=600, type=int)
+                        default=900, type=int)
     parser.add_argument('--w_len', dest='w_len',
                         help='image width',
-                        default=1000, type=int)
+                        default=1400, type=int)
     parser.add_argument('--image_ext', dest='image_ext',
                         help='image format',
                         default='.tif', type=str)

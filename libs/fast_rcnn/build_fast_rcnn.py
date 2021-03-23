@@ -87,6 +87,9 @@ class FastRCNN(object):
         self.is_training = is_training
         self.weight_decay = weight_decay
 
+        self.dbox = None
+        self.scr = None
+
         self.fast_rcnn_all_level_rois, self.fast_rcnn_all_level_rotate_proposals, \
         self.fast_rcnn_all_level_horizontal_proposals = self.get_rois(self.roi_size, self.roi_size)
 
@@ -541,6 +544,12 @@ class FastRCNN(object):
 
             decode_boxes_list = tf.unstack(decode_boxes, axis=1)
             score_list = tf.unstack(scores[:, 1:], axis=1)
+
+            self.dbox = decode_boxes_list
+            
+
+
+
             after_nms_boxes = []
             after_nms_scores = []
             category_list = []
@@ -558,7 +567,7 @@ class FastRCNN(object):
                                                       use_angle_condition=self.use_angle_condition,
                                                       angle_threshold=self.boxes_angle_threshold,
                                                       use_gpu=cfgs.NMS_USE_GPU)
-
+                self.scr = valid_indices
                 after_nms_boxes.append(tf.gather(per_class_decode_boxes, valid_indices))
                 after_nms_scores.append(tf.gather(per_class_scores, valid_indices))
                 tmp_category = tf.gather(category, valid_indices)
@@ -587,19 +596,21 @@ class FastRCNN(object):
             fast_rcnn_softmax_scores = slim.softmax(self.fast_rcnn_scores)  # [-1, num_classes+1]
 
             fast_rcnn_encode_boxes = tf.reshape(self.fast_rcnn_encode_boxes, [-1, 5])
-
+            
             reference_boxes = tf.tile(self.fast_rcnn_all_level_horizontal_proposals, [1, self.num_classes])  # [N, 5*num_classes]
             # reference_boxes = tf.tile(self.fast_rcnn_all_level_rotate_proposals, [1, self.num_classes])  # [N, 5*num_classes]
             reference_boxes = tf.reshape(reference_boxes, [-1, 5])   # [N*num_classes, 5]
             fast_rcnn_decode_boxes = encode_and_decode.decode_boxes(encode_boxes=fast_rcnn_encode_boxes,
                                                                     reference_boxes=reference_boxes,
                                                                     scale_factors=self.scale_factors)
+            
 
             # fast_rcnn_decode_boxes = boxes_utils.clip_boxes_to_img_boundaries(fast_rcnn_decode_boxes,
             #                                                                   img_shape=self.img_shape)
 
             # mutilclass NMS
             fast_rcnn_decode_boxes = tf.reshape(fast_rcnn_decode_boxes, [-1, self.num_classes*5])
+            
             fast_rcnn_decode_boxes, fast_rcnn_score, num_of_objects, detection_category = \
                 self.fast_rcnn_proposals(fast_rcnn_decode_boxes, scores=fast_rcnn_softmax_scores)
 
