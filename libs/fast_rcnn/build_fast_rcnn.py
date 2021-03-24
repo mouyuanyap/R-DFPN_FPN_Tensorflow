@@ -19,6 +19,27 @@ from libs.box_utils.visualization import roi_visualize
 
 DEBUG = False
 
+def filter_box(box,score):
+  new1 = [] 
+  new2 = []
+  print(box)
+  print(score)
+  for k,i in enumerate(box[0]):
+    #gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+    
+    exist = False
+    for z in new1:
+      if (i[0]>z[0]-2 and i[0]<z[0]+2) and (i[1]>z[1]-2 and i[1]<z[1]+2) and ((i[4]>z[4]-1 and i[4]<z[4]+1)):
+        exist = True
+        #print('exist')
+        break
+    if not exist and i[0]>0:
+      new1.append(i)
+      new2.append(score[0][k])
+      print(score[0][k])
+      
+  return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
+
 
 class FastRCNN(object):
     def __init__(self,
@@ -273,6 +294,7 @@ class FastRCNN(object):
             print_tensors(levels, 'levels')
         with tf.variable_scope('fast_rcnn_roi'):
             # P6 is not used by the Fast R-CNN detector.
+            
 
             rpn_proposals_boxes_convert = tf.py_func(forward_convert,
                                                      inp=[self.rpn_proposals_boxes],
@@ -545,7 +567,28 @@ class FastRCNN(object):
             decode_boxes_list = tf.unstack(decode_boxes, axis=1)
             score_list = tf.unstack(scores[:, 1:], axis=1)
 
-            self.dbox = decode_boxes_list
+            print('rpn_proposal')
+            print(self.rpn_proposals_boxes)
+
+            '''rpn_proposals_boxes_convert = tf.py_func(forward_convert,
+                                                     inp=[self.rpn_proposals_boxes],
+                                                     Tout=tf.float32)'''
+            
+            print('decode_box')
+
+            print(decode_boxes_list[0])
+            #self.dbox = decode_boxes_list[0]
+            
+
+            filtered_box,filtered_score = tf.py_func(filter_box,
+                                  inp=[decode_boxes_list,score_list],
+                                  Tout=(tf.float32,tf.float32))
+            self.dbox = [filtered_box]
+            self.scr = [filtered_score]
+            
+
+            #for i in decode_boxes_list[0]:
+            #  print(i)
             
 
 
@@ -553,8 +596,8 @@ class FastRCNN(object):
             after_nms_boxes = []
             after_nms_scores = []
             category_list = []
-            for per_class_decode_boxes, per_class_scores in zip(decode_boxes_list, score_list):
-
+            for per_class_decode_boxes, per_class_scores in zip([filtered_box], [filtered_score]):
+                
                 if self.top_k_nms:
                     top_k_scores, top_k_indices = tf.nn.top_k(per_class_scores, k=self.top_k_nms)
                     per_class_scores = top_k_scores
@@ -567,7 +610,7 @@ class FastRCNN(object):
                                                       use_angle_condition=self.use_angle_condition,
                                                       angle_threshold=self.boxes_angle_threshold,
                                                       use_gpu=cfgs.NMS_USE_GPU)
-                self.scr = valid_indices
+                
                 after_nms_boxes.append(tf.gather(per_class_decode_boxes, valid_indices))
                 after_nms_scores.append(tf.gather(per_class_scores, valid_indices))
                 tmp_category = tf.gather(category, valid_indices)
