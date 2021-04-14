@@ -40,6 +40,44 @@ def filter_box(box,score):
       
   return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
 
+def filter_box2(box,score):
+  new1 = [] 
+  new2 = []
+  new3 = []
+  print(box)
+  print(score)
+  for k,i in enumerate(box):
+    print(k)
+    gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+    #print(gg)
+    x = [gg[0][0],gg[1][0],gg[2][0],gg[3][0]]
+    y = [gg[0][1],gg[1][1],gg[2][1],gg[3][1]]
+    mid_x = min(x) + ((max(x) - min(x))/2)
+    mid_y = min(y) + ((max(y) - min(y))/2)
+    print((mid_x,mid_y))
+    exist = False
+    #print(i)
+    #print(';')
+    for z in new3:
+      #print(z)
+      if ((mid_x>z[0]-5 and mid_x<z[0]+5) and (mid_y>z[1]-5 and mid_y<z[1]+5)):
+        
+        z[0] = (z[0] + mid_x)/2
+        z[1] = (z[1] + mid_y)/2
+        exist = True
+        print('changed')
+        print(z)
+        #print('exist')
+        break
+    if not exist and i[0]>0:
+      #print("ei")
+      new1.append(i)
+      new2.append(score[k])
+      new3.append([mid_x,mid_y])
+      #print(score[k])
+    print(new1)
+      
+  return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
 
 class FastRCNN(object):
     def __init__(self,
@@ -583,7 +621,7 @@ class FastRCNN(object):
             filtered_box,filtered_score = tf.py_func(filter_box,
                                   inp=[decode_boxes_list,score_list],
                                   Tout=(tf.float32,tf.float32))
-            self.dbox = [filtered_box]
+            #self.dbox = [filtered_box]
             self.scr = [filtered_score]
             
 
@@ -621,14 +659,22 @@ class FastRCNN(object):
             all_nms_scores = tf.concat(after_nms_scores, axis=0)
             all_category = tf.concat(category_list, axis=0)
 
+            #self.dbox = all_category
+
+            all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
+                                  inp=[all_nms_boxes,all_nms_scores],
+                                  Tout=(tf.float32,tf.float32))
+
             # all_nms_boxes = boxes_utils.clip_boxes_to_img_boundaries(all_nms_boxes,
             #                                                          img_shape=self.img_shape)
-
+            self.dbox = [all_nms_boxes]
             scores_large_than_threshold_indices = \
-                tf.reshape(tf.where(tf.greater(all_nms_scores, self.show_detections_score_threshold)), [-1])
+                tf.reshape(tf.where(tf.greater([all_nms_scores], self.show_detections_score_threshold)), [-1])
 
             all_nms_boxes = tf.gather(all_nms_boxes, scores_large_than_threshold_indices)
+            
             all_nms_scores = tf.gather(all_nms_scores, scores_large_than_threshold_indices)
+            
             all_category = tf.gather(all_category, scores_large_than_threshold_indices)
 
             return all_nms_boxes, all_nms_scores, tf.shape(all_nms_boxes)[0], all_category  # num of objects
