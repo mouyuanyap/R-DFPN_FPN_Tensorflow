@@ -376,7 +376,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess, coord)
 
-            summary_writer = tf.summary.FileWriter("/content/R-DFPN_FPN_Tensorflow/summary", graph=sess.graph)
+            #summary_writer = tf.summary.FileWriter("/content/R-DFPN_FPN_Tensorflow/summary", graph=sess.graph)
             p = 0 
             for img_path in file_paths:
                 start = timer()
@@ -396,7 +396,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 imgW = img.shape[1]
                 kk = 0 
 
-                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result3/annotations_hard3/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
+                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result5/annotations/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
 
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
@@ -450,7 +450,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         print(rpn_image[0].shape)
 
                         #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
-                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/rpn_hard3' + '/ship{}_fpn.jpg'.format(p), rpn_image[0])
+                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result5/rpn' + '/ship{}_fpn.jpg'.format(p), rpn_image[0])
                         
                         kk = kk + 1 
                         if show_res:
@@ -486,7 +486,8 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                                      scores=np.array(score_res))     
                 print('img')
                 print(img_np.shape)                                          
-                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output_hard3' + '/ship{}_fpn.jpg'.format(p), img_np)
+                #cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output_hard3' + '/ship{}_fpn.jpg'.format(p), img_np)
+                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result5/output' + '/ship{}_fpn.jpg'.format(p), img_np)
                 p = p + 1
                 
                 #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})

@@ -60,7 +60,7 @@ def filter_box2(box,score):
     #print(';')
     for z in new3:
       #print(z)
-      if ((mid_x>z[0]-5 and mid_x<z[0]+5) and (mid_y>z[1]-5 and mid_y<z[1]+5)):
+      if ((mid_x>z[0]-10 and mid_x<z[0]+10) and (mid_y>z[1]-10 and mid_y<z[1]+10)):
         
         z[0] = (z[0] + mid_x)/2
         z[1] = (z[1] + mid_y)/2
@@ -75,7 +75,7 @@ def filter_box2(box,score):
       new2.append(score[k])
       new3.append([mid_x,mid_y])
       #print(score[k])
-    print(new1)
+    print(new3)
       
   return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
 
@@ -661,19 +661,25 @@ class FastRCNN(object):
 
             #self.dbox = all_category
 
-            all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
-                                  inp=[all_nms_boxes,all_nms_scores],
-                                  Tout=(tf.float32,tf.float32))
+            
 
             # all_nms_boxes = boxes_utils.clip_boxes_to_img_boundaries(all_nms_boxes,
             #                                                          img_shape=self.img_shape)
-            self.dbox = [all_nms_boxes]
+            
             scores_large_than_threshold_indices = \
                 tf.reshape(tf.where(tf.greater([all_nms_scores], self.show_detections_score_threshold)), [-1])
 
             all_nms_boxes = tf.gather(all_nms_boxes, scores_large_than_threshold_indices)
             
             all_nms_scores = tf.gather(all_nms_scores, scores_large_than_threshold_indices)
+
+            all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
+                                  inp=[all_nms_boxes,all_nms_scores],
+                                  Tout=(tf.float32,tf.float32))
+            all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
+                                  inp=[all_nms_boxes,all_nms_scores],
+                                  Tout=(tf.float32,tf.float32))
+            self.dbox = [all_nms_boxes]
             
             all_category = tf.gather(all_category, scores_large_than_threshold_indices)
 
