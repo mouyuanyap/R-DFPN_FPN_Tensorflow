@@ -245,7 +245,7 @@ def train():
 
             summary_path = os.path.join(FLAGS.summary_path, cfgs.VERSION)
             mkdir(summary_path)
-            summary_writer = tf.summary.FileWriter(summary_path, graph=sess.graph)
+            summary_writer = tf.summary.FileWriter('/content/drive/MyDrive/RDFPN_ckpt2/summary', graph=sess.graph)
 
             for step in range(cfgs.MAX_ITERATION):
                 training_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -285,7 +285,7 @@ def train():
                     save_dir = os.path.join(FLAGS.trained_checkpoint, cfgs.VERSION)
                     mkdir(save_dir)
 
-                    save_ckpt = os.path.join(save_dir, 'voc_'+str(_global_step)+'model.ckpt')
+                    save_ckpt = os.path.join('/content/drive/MyDrive/RDFPN_ckpt2', 'voc_'+str(_global_step)+'model.ckpt')
                     saver.save(sess, save_ckpt)
                     print(' weights had been saved')
 
