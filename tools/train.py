@@ -184,10 +184,21 @@ def train():
         total_loss = slim.losses.get_total_loss()
 
         global_step = slim.get_or_create_global_step()
-
+        '''
         lr = tf.train.piecewise_constant(global_step,
                                          boundaries=[np.int64(30000), np.int64(60000)],
-                                         values=[cfgs.LR, cfgs.LR/10, cfgs.LR/100])
+                                         values=[cfgs.LR, cfgs.LR/10, cfgs.LR/100])'''
+        min_lr = cfgs.LR
+        max_lr = cfgs.LR_MAX
+        cycle = tf.floor(tf.add(tf.cast(tf.constant(1),tf.float64),tf.divide(global_step,tf.cast(tf.constant(4960),tf.int64))))
+        temp = tf.divide(global_step,tf.cast(tf.constant(2480),tf.int64))
+        temp2 = tf.subtract(temp,tf.multiply(tf.cast(tf.constant(2),tf.float64),cycle))
+        lr_x = tf.abs(tf.add(temp2,tf.cast(tf.constant(1),tf.float64)))
+
+
+        temp3 = tf.maximum(tf.cast(tf.const(0),tf.float64),tf.subtract(tf.cast(tf.constant(1),tf.float64),lr_x))
+        lr = tf.add(tf.cast(min_lr,tf.float64),tf.multiply(tf.subtract(max_lr,min_lr),temp3))
+
 
         # optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
         optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
@@ -245,16 +256,16 @@ def train():
 
             summary_path = os.path.join(FLAGS.summary_path, cfgs.VERSION)
             mkdir(summary_path)
-            summary_writer = tf.summary.FileWriter('/content/drive/MyDrive/RDFPN_ckpt2/summary', graph=sess.graph)
+            summary_writer = tf.summary.FileWriter('/content/drive/MyDrive/RDFPN_ckpt4/summary2', graph=sess.graph)
 
             for step in range(cfgs.MAX_ITERATION):
                 training_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
                 start = time.time()
 
-                _global_step, _img_name_batch, _rpn_location_loss, _rpn_classification_loss, \
+                _lr, _global_step, _img_name_batch, _rpn_location_loss, _rpn_classification_loss, \
                 _rpn_total_loss, _fast_rcnn_location_loss, _fast_rcnn_classification_loss, \
                 _fast_rcnn_total_loss, _total_loss, _= \
-                    sess.run([global_step, img_name_batch, rpn_location_loss, rpn_classification_loss,
+                    sess.run([lr, global_step, img_name_batch, rpn_location_loss, rpn_classification_loss,
                               rpn_total_loss, fast_rcnn_location_loss, fast_rcnn_classification_loss,
                               fast_rcnn_total_loss, total_loss, train_op])
 
@@ -262,11 +273,11 @@ def train():
 
                 if step % 10 == 0:
 
-                    print(""" {}: step{}    image_name:{} |\t
+                    print(""" {}: lr={} step{}    image_name:{} |\t
                           rpn_loc_loss:{} |\t rpn_cla_loss:{} |\t rpn_total_loss:{} |
                           fast_rcnn_loc_loss:{} |\t fast_rcnn_cla_loss:{} |\t fast_rcnn_total_loss:{} |
                           total_loss:{} |\t per_cost_time:{}s""" \
-                          .format(training_time, _global_step, str(_img_name_batch[0]), _rpn_location_loss,
+                          .format(training_time,_lr, _global_step, str(_img_name_batch[0]), _rpn_location_loss,
                                   _rpn_classification_loss, _rpn_total_loss, _fast_rcnn_location_loss,
                                   _fast_rcnn_classification_loss, _fast_rcnn_total_loss, _total_loss,
                                   (end - start)))
@@ -285,7 +296,7 @@ def train():
                     save_dir = os.path.join(FLAGS.trained_checkpoint, cfgs.VERSION)
                     mkdir(save_dir)
 
-                    save_ckpt = os.path.join('/content/drive/MyDrive/RDFPN_ckpt2', 'voc_'+str(_global_step)+'model.ckpt')
+                    save_ckpt = os.path.join('/content/drive/MyDrive/RDFPN_ckpt4', 'voc_'+str(_global_step)+'model.ckpt')
                     saver.save(sess, save_ckpt)
                     print(' weights had been saved')
 
