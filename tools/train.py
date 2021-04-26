@@ -196,8 +196,8 @@ def train():
         lr_x = tf.abs(tf.add(temp2,tf.cast(tf.constant(1),tf.float64)))
 
 
-        temp3 = tf.maximum(tf.cast(tf.const(0),tf.float64),tf.subtract(tf.cast(tf.constant(1),tf.float64),lr_x))
-        lr = tf.add(tf.cast(min_lr,tf.float64),tf.multiply(tf.subtract(max_lr,min_lr),temp3))
+        temp3 = tf.maximum(tf.cast(tf.constant(0),tf.float64),tf.subtract(tf.cast(tf.constant(1),tf.float64),lr_x))
+        lr = tf.add(tf.cast(min_lr,tf.float32),tf.multiply(tf.subtract(max_lr,min_lr),tf.cast(temp3,tf.float32)))
 
 
         # optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
@@ -256,7 +256,7 @@ def train():
 
             summary_path = os.path.join(FLAGS.summary_path, cfgs.VERSION)
             mkdir(summary_path)
-            summary_writer = tf.summary.FileWriter('/content/drive/MyDrive/RDFPN_ckpt4/summary2', graph=sess.graph)
+            summary_writer = tf.summary.FileWriter('/content/drive/MyDrive/RDFPN_ckpt5/summary', graph=sess.graph)
 
             for step in range(cfgs.MAX_ITERATION):
                 training_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
@@ -296,7 +296,7 @@ def train():
                     save_dir = os.path.join(FLAGS.trained_checkpoint, cfgs.VERSION)
                     mkdir(save_dir)
 
-                    save_ckpt = os.path.join('/content/drive/MyDrive/RDFPN_ckpt4', 'voc_'+str(_global_step)+'model.ckpt')
+                    save_ckpt = os.path.join('/content/drive/MyDrive/RDFPN_ckpt5', 'voc_'+str(_global_step)+'model.ckpt')
                     saver.save(sess, save_ckpt)
                     print(' weights had been saved')
 
