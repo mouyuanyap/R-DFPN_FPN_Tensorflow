@@ -19,6 +19,213 @@ from libs.box_utils.visualization import roi_visualize
 
 DEBUG = False
 
+def py_cpu_softnms2(dets, box, sc, Nt=0.5, sigma=0.5, thresh=0.5, method=2):
+    """
+    py_cpu_softnms
+    :param dets:   boexs 坐标矩阵 format [y1, x1, y2, x2]
+    :param sc:     每个 boxes 对应的分数
+    :param Nt:     iou 交叠门限
+    :param sigma:  使用 gaussian 函数的方差
+    :param thresh: 最后的分数门限
+    :param method: 使用的方法
+    :return:       留下的 boxes 的 index
+    """
+
+    # indexes concatenate boxes with the last column
+    N = dets.shape[0]
+    indexes = np.array([np.arange(N)])
+    dets = np.concatenate((dets, indexes.T), axis=1)
+
+    # the order of boxes coordinate is [y1,x1,y2,x2]
+    y1 = dets[:, 0]
+    x1 = dets[:, 1]
+    y2 = dets[:, 2]
+    x2 = dets[:, 3]
+    scores = sc[0]
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    print(scores)
+
+    for i in range(N):
+        # intermediate parameters for later parameters exchange
+        tBD = dets[i, :].copy()
+        tscore = scores[i].copy()
+        tarea = areas[i].copy()
+        pos = i + 1
+
+        #
+        if i != N-1:
+            maxscore = np.max(scores[pos:], axis=0)
+            maxpos = np.argmax(scores[pos:], axis=0)
+        else:
+            maxscore = scores[-1]
+            maxpos = 0
+        if tscore < maxscore:
+            dets[i, :] = dets[maxpos + i + 1, :]
+            dets[maxpos + i + 1, :] = tBD
+            tBD = dets[i, :]
+
+            scores[i] = scores[maxpos + i + 1]
+            scores[maxpos + i + 1] = tscore
+            tscore = scores[i]
+
+            areas[i] = areas[maxpos + i + 1]
+            areas[maxpos + i + 1] = tarea
+            tarea = areas[i]
+
+        # IoU calculate
+        xx1 = np.maximum(dets[i, 1], dets[pos:, 1])
+        yy1 = np.maximum(dets[i, 0], dets[pos:, 0])
+        xx2 = np.minimum(dets[i, 3], dets[pos:, 3])
+        yy2 = np.minimum(dets[i, 2], dets[pos:, 2])
+
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[pos:] - inter)
+
+        # Three methods: 1.linear 2.gaussian 3.original NMS
+        if method == 1:  # linear
+            weight = np.ones(ovr.shape)
+            weight[ovr > Nt] = weight[ovr > Nt] - ovr[ovr > Nt]
+        elif method == 2:  # gaussian
+            weight = np.exp(-(ovr * ovr) / sigma)
+        else:  # original NMS
+            weight = np.ones(ovr.shape)
+            weight[ovr > Nt] = 0
+
+        scores[pos:] = weight * scores[pos:]
+
+    # select the boxes and keep the corresponding indexes
+    inds = dets[:, 4][scores > thresh]
+    keep = inds.astype(int)
+    print(keep)
+    new1 = []
+    new2 = []
+
+    for i in keep:
+      new1.append(box[0][i])
+      new2.append(sc[0][i])
+
+    print('in nms2: ', new1)
+    print('in nms2: ', new2)
+
+
+    return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
+
+def convert_to_yxyx2(box):
+  new1 = []
+  for i in box[0]:
+    gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+    x = [gg[0][0],gg[1][0],gg[2][0],gg[3][0]]
+    y = [gg[0][1],gg[1][1],gg[2][1],gg[3][1]]
+    new1.append([min(y),min(x),max(y),max(x)])
+  print('converted box2: ',new1)
+  return np.array(new1,dtype=np.float32)
+
+
+def py_cpu_softnms(dets, box, sc, Nt=0.6, sigma=0.5, thresh=0.5, method=2):
+    """
+    py_cpu_softnms
+    :param dets:   boexs 坐标矩阵 format [y1, x1, y2, x2]
+    :param sc:     每个 boxes 对应的分数
+    :param Nt:     iou 交叠门限
+    :param sigma:  使用 gaussian 函数的方差
+    :param thresh: 最后的分数门限
+    :param method: 使用的方法
+    :return:       留下的 boxes 的 index
+    """
+    print("in softnms: ",dets)
+
+    # indexes concatenate boxes with the last column
+    N = dets.shape[0]
+    indexes = np.array([np.arange(N)])
+    dets = np.concatenate((dets, indexes.T), axis=1)
+
+    # the order of boxes coordinate is [y1,x1,y2,x2]
+    y1 = dets[:, 0]
+    x1 = dets[:, 1]
+    y2 = dets[:, 2]
+    x2 = dets[:, 3]
+    scores = sc
+    print(sc)
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+
+    for i in range(N):
+        # intermediate parameters for later parameters exchange
+        tBD = dets[i, :].copy()
+        tscore = scores[i].copy()
+        tarea = areas[i].copy()
+        pos = i + 1
+
+        #
+        if i != N-1:
+            maxscore = np.max(scores[pos:], axis=0)
+            maxpos = np.argmax(scores[pos:], axis=0)
+        else:
+            maxscore = scores[-1]
+            maxpos = 0
+        if tscore < maxscore:
+            dets[i, :] = dets[maxpos + i + 1, :]
+            dets[maxpos + i + 1, :] = tBD
+            tBD = dets[i, :]
+
+            scores[i] = scores[maxpos + i + 1]
+            scores[maxpos + i + 1] = tscore
+            tscore = scores[i]
+
+            areas[i] = areas[maxpos + i + 1]
+            areas[maxpos + i + 1] = tarea
+            tarea = areas[i]
+
+        # IoU calculate
+        xx1 = np.maximum(dets[i, 1], dets[pos:, 1])
+        yy1 = np.maximum(dets[i, 0], dets[pos:, 0])
+        xx2 = np.minimum(dets[i, 3], dets[pos:, 3])
+        yy2 = np.minimum(dets[i, 2], dets[pos:, 2])
+
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[pos:] - inter)
+
+        # Three methods: 1.linear 2.gaussian 3.original NMS
+        if method == 1:  # linear
+            weight = np.ones(ovr.shape)
+            weight[ovr > Nt] = weight[ovr > Nt] - ovr[ovr > Nt]
+        elif method == 2:  # gaussian
+            weight = np.exp(-(ovr * ovr) / sigma)
+        else:  # original NMS
+            weight = np.ones(ovr.shape)
+            weight[ovr > Nt] = 0
+
+        scores[pos:] = weight * scores[pos:]
+
+    # select the boxes and keep the corresponding indexes
+    inds = dets[:, 4][scores > thresh]
+    keep = inds.astype(int)
+    print(keep)
+    new1 = []
+    new2 = []
+
+    for i in keep:
+      new1.append(box[i])
+      print('score_nms:', sc[i])
+      new2.append(sc[i])
+
+
+    return np.array(new1,dtype=np.float32),np.array(new2,dtype=np.float32)
+
+def convert_to_yxyx(box):
+  new1 = []
+  print('hello? : ',box)
+  for i in box:
+    gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
+    x = [gg[0][0],gg[1][0],gg[2][0],gg[3][0]]
+    y = [gg[0][1],gg[1][1],gg[2][1],gg[3][1]]
+    new1.append([min(y),min(x),max(y),max(x)])
+  print('converted_box:', new1)
+  return np.array(new1,dtype=np.float32)
+
 def filter_box(box,score):
   new1 = [] 
   new2 = []
@@ -58,12 +265,17 @@ def filter_box2(box,score):
     exist = False
     #print(i)
     #print(';')
-    for z in new3:
+    for index,z in enumerate(new3):
       #print(z)
       if ((mid_x>z[0]-10 and mid_x<z[0]+10) and (mid_y>z[1]-10 and mid_y<z[1]+10)):
         
         z[0] = (z[0] + mid_x)/2
         z[1] = (z[1] + mid_y)/2
+        new1[index][0] = (new1[index][0] + i[0]) / 2
+        new1[index][1] = (new1[index][1] + i[1]) / 2
+        new1[index][2] = (new1[index][2] + i[2]) / 2
+        new1[index][3] = (new1[index][3] + i[3]) / 2
+        new1[index][4] = (new1[index][4] + i[4]) / 2
         exist = True
         print('changed')
         print(z)
@@ -621,8 +833,17 @@ class FastRCNN(object):
             filtered_box,filtered_score = tf.py_func(filter_box,
                                   inp=[decode_boxes_list,score_list],
                                   Tout=(tf.float32,tf.float32))
+            '''
+            testing = tf.py_func(convert_to_yxyx2,
+                                  inp=[decode_boxes_list],
+                                  Tout=(tf.float32))
+
+            filtered_box,filtered_score = tf.py_func(py_cpu_softnms2,
+                                  inp=[testing,decode_boxes_list,score_list],
+                                  Tout=(tf.float32,tf.float32))'''
+
             #self.dbox = [filtered_box]
-            self.scr = [filtered_score]
+            #self.scr = [filtered_score]
             
 
             #for i in decode_boxes_list[0]:
@@ -661,8 +882,6 @@ class FastRCNN(object):
 
             #self.dbox = all_category
 
-            
-
             # all_nms_boxes = boxes_utils.clip_boxes_to_img_boundaries(all_nms_boxes,
             #                                                          img_shape=self.img_shape)
             
@@ -673,13 +892,27 @@ class FastRCNN(object):
             
             all_nms_scores = tf.gather(all_nms_scores, scores_large_than_threshold_indices)
 
+            
+            testing = tf.py_func(convert_to_yxyx,
+                                  inp=[all_nms_boxes],
+                                  Tout=(tf.float32))
+
+            all_nms_boxes,all_nms_scores = tf.py_func(py_cpu_softnms,
+                                  inp=[testing,all_nms_boxes,all_nms_scores],
+                                  Tout=(tf.float32,tf.float32))
+            
             all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
                                   inp=[all_nms_boxes,all_nms_scores],
                                   Tout=(tf.float32,tf.float32))
             all_nms_boxes,all_nms_scores = tf.py_func(filter_box2,
                                   inp=[all_nms_boxes,all_nms_scores],
                                   Tout=(tf.float32,tf.float32))
+            
+
             self.dbox = [all_nms_boxes]
+
+
+            self.scr = [all_nms_boxes]
             
             all_category = tf.gather(all_category, scores_large_than_threshold_indices)
 
