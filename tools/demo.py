@@ -377,7 +377,8 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
             threads = tf.train.start_queue_runners(sess, coord)
 
             #summary_writer = tf.summary.FileWriter("/content/R-DFPN_FPN_Tensorflow/summary", graph=sess.graph)
-            p = 0 
+            p = 0
+            print("file_path",file_paths)
             for img_path in file_paths:
                 start = timer()
                 # gdal.AllRegister()
@@ -396,7 +397,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 imgW = img.shape[1]
                 kk = 0 
 
-                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result5/annotations/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
+                w = open("/content/drive/MyDrive/RDFPN_ckpt1/result_final/annotations_hard/{}.txt".format(img_path.split('/')[-1].split('.')[0]), "w")
 
                 for hh in range(0, imgH, h_len):
                     h_size = min(h_len, imgH - hh)
@@ -426,6 +427,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         j = 0
                         new = [] 
                         print(boxx)
+                        '''
                         for i in boxx[0]:
                           
                             #gg = cv2.boxPoints(((i[0], i[1]), (i[2], i[3]), i[4]))
@@ -447,10 +449,10 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                         print('softmax_score')
                         print(s2)
                         print('rpn')
-                        print(rpn_image[0].shape)
+                        print(rpn_image[0].shape)'''
 
                         #cv2.imwrite('/content/R-DFPN_FPN_Tensorflow' + '/{}_fpn{}.jpg'.format(img_path.split('/')[-1].split('.')[0],kk), rpn_output)                                                         
-                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result5/rpn' + '/ship{}_fpn.jpg'.format(p), rpn_image[0])
+                        cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result_final/rpn_hard' + '/ship{}_fpn.jpg'.format(p), rpn_image[0])
                         
                         kk = kk + 1 
                         if show_res:
@@ -487,7 +489,7 @@ def detect_img(file_paths, des_folder, det_th, h_len, w_len, show_res=False):
                 print('img')
                 print(img_np.shape)                                          
                 #cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result3/output_hard3' + '/ship{}_fpn.jpg'.format(p), img_np)
-                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result5/output' + '/ship{}_fpn.jpg'.format(p), img_np)
+                cv2.imwrite('/content/drive/MyDrive/RDFPN_ckpt1/result_final/output_hard' + '/ship{}_fpn.jpg'.format(p), img_np)
                 p = p + 1
                 
                 #summary_str = sess.run(summary_op,feed_dict={img_plac: src_img})
