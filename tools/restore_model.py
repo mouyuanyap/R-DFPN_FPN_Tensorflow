@@ -19,7 +19,7 @@ FLAGS = get_flags_byname(cfgs.NET_NAME)
 def get_restorer():
 
     #checkpoint_path = tf.train.latest_checkpoint(os.path.join(FLAGS.trained_checkpoint, cfgs.VERSION))
-    checkpoint_path = '/content/drive/MyDrive/RDFPN_ckpt5/voc_15003model.ckpt'
+    checkpoint_path = '/content/drive/MyDrive/RDFPN_ckpt6/voc_15002model.ckpt'
     if checkpoint_path != None:
         if RESTORE_FROM_RPN:
             print('___restore from rpn___')
