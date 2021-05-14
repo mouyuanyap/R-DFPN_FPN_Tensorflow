@@ -91,7 +91,7 @@ RPN_TOP_K_NMS = 20000
 RPN_ANCHOR_ANGLES_THRESHOLD = 15.0
 RPN_NMS_ANGLES_THRESHOLD = 15.0
 KERNEL_SIZE = 5
-FEATURE_PYRAMID_MODE = 1  # {0: 'feature_pyramid', 1: 'build_dense_feature_pyramid'}
+FEATURE_PYRAMID_MODE = 0  # {0: 'feature_pyramid', 1: 'build_dense_feature_pyramid'}
 USE_HORIZONTAL_NMS = False
 RPN_USE_ANGLE_CONDITION = True
 
